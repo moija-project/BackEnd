@@ -2,33 +2,33 @@ package com.example.moija_project.service;
 
 import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.PostRes;
-import com.example.moija_project.dto.QnADTO;
 import com.example.moija_project.dto.UserCheckReq;
+import com.example.moija_project.entities.Member;
 import com.example.moija_project.entities.Recruit;
+import com.example.moija_project.entities.TeamId;
 import com.example.moija_project.global.BaseException;
+import com.example.moija_project.repository.MemberRepository;
 import com.example.moija_project.repository.RecruitRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
-import static com.example.moija_project.global.BaseResponseStatus.NOT_EXISTS;
+import static com.example.moija_project.global.BaseResponseStatus.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
-    private final ConditionService conditionService;
-    @Autowired
     private final RecruitRepository recruitRepository;
+    private final ConditionService conditionService;
+    private final WaitingService waitingService;
+    private final MemberService memberService;
     public void writePost(PostReq.PostWriteReq postWriteReq, Long postId) throws BaseException {
         Recruit recruit;
 
@@ -57,12 +57,18 @@ public class PostService {
             recruit = setDupColumn(recruit,postWriteReq);
             recruit.setRecruitId(null);
             recruit.setTimeLastWrite(new Timestamp(System.currentTimeMillis()));
+            //이게 '최신순'의 기준이 되고, 따로 이용자에게 보여지는 시간은 아님
+            recruit.setLatestWrite(new Timestamp(System.currentTimeMillis()));
             recruit.setChanged(true);
             recruitRepository.notAvailable(postId);
         }
 
         //최종 저장 -> sql 모집에 하나, nosql 조건에 하나 저장
-        recruitRepository.save(recruit);
+        recruitRepository.saveAndFlush(recruit);
+
+        //모임이 생겼으니 팀원이 들어갈 member id도 연결해 줘야함.
+        memberService.save(recruit.getRecruitId(),recruit.getLeaderId());
+
         //조건이 있다면
         if(postWriteReq.getNumCondition() != 0) {
             //recruit의 id를 가져와서 같이 서비스로 넘김
@@ -74,6 +80,14 @@ public class PostService {
     }
 
     public void remove(UserCheckReq userCheckReq, Long postId) throws BaseException {
+        Optional<Recruit> recruit = recruitRepository.findByRecruitIdAndIsAvailableTrue(postId);
+        if(recruit.isEmpty()) {
+            throw new BaseException(NOT_EXISTS);
+        }
+        //마지막으로 수정한 날짜를 변경 (이 날로 부터 3개월 뒤에 자동 삭제)
+        recruit.get().setTimeLastWrite(new Timestamp(System.currentTimeMillis()));
+        recruitRepository.saveAndFlush(recruit.get());
+
         recruitRepository.notAvailable(postId);
     }
     private Recruit setDupColumn(Recruit recruit,PostReq.PostWriteReq postWriteReq) {
@@ -146,9 +160,15 @@ public class PostService {
         return recruitRepository.updateView(id);
     }
 
-    public List<QnADTO> viewQuest(UserCheckReq userCheckReq, Long postId) throws BaseException {
-        List<QnADTO> questions = conditionService.viewCondition(postId);
-        return questions;
-    }
+    //답변을 등록하고, 대기를 걸어놓고 모임 초대를 기다리는 것 , waiting에 접근하고, waiting은 answer에 접근해서 등록
 
+    public void inWaitingQueue(PostReq.PostWaitingReq postWaitingReq, Long postId, String userId) throws BaseException {
+        //이미 있는거면 안되게 해야지
+        if(memberService.existTeamUser(postId,userId))
+            throw new BaseException(TEAM_ALREADY_JOINED);
+        if(waitingService.existTeamUser(postId,userId))
+            throw new BaseException(WAITING_ALREADY_EXISTS);
+        //question개수와 answer개수가 다르다면 답변을 덜 쓴거니 다 채우라고 해야지 -> 이거 프론트에서 처리
+        waitingService.saveWaiting(postWaitingReq,postId,userId);
+    }
 }

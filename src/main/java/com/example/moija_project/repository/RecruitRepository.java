@@ -19,11 +19,11 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
     @Modifying
     @Transactional
     @Query(value="update Recruit r set r.likes = r.likes + 1 where r.recruitId = :recruitId")
-    Integer updateLikeUp(@Param("recruitId") Long recruitId, @Param("userId")String userId);
+    Integer updateLikeUp(@Param("recruitId") Long recruitId);
     @Modifying
     @Transactional
     @Query(value="update Recruit r set r.likes = r.likes - 1 where r.recruitId = :recruitId")
-    Integer updateLikeDown(@Param("recruitId") Long recruitId, @Param("userId")String userId);
+    Integer updateLikeDown(@Param("recruitId") Long recruitId);
 
     //조회수 API
     @Modifying
@@ -43,5 +43,7 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
     //user 체크하기 위함
     @Query("SELECT r.leaderId FROM Recruit r WHERE r.recruitId = :recruitId")
     Optional<String> findLeaderIdByRecruitId(@Param("recruitId") Long recruitId);
+
+
 
 }

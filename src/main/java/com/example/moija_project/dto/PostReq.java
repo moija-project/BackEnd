@@ -35,14 +35,29 @@ public class PostReq {
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class PostAnswerReq{
+    public static class PostWaitingReq {
         ArrayList<String> answers;
-        @JsonProperty("num_question")
-        int numQuestion;
+        @JsonProperty("num_answer")
+        short numAnswer;
+        @JsonProperty("is_ask")
+        boolean isAsk;
     }
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    @Getter
-//    @Setter
-//    public static class PostLikeReq{}
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class PostLikeReq{
+        @JsonProperty("post_id")
+        Long recruitId;
+        int vote;
+    }
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class PostClipReq{
+        @JsonProperty("post_id")
+        Long recruitId;
+        int clip;
+    }
 }

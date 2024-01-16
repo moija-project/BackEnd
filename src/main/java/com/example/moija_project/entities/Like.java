@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity(name = "like")
+@Entity
+@Table(name = "likes")
 @Setter
 @Getter
 @Builder
@@ -23,11 +24,11 @@ public class Like {
     private Long recruitId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false, unique = true)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "recruit_id", referencedColumnName = "recruit_id", insertable = false, updatable = false)
+    @JoinColumn(name = "recruit_id", referencedColumnName = "recruit_id", insertable = false, updatable = false, unique = true)
     private Recruit recruit;
 
 }

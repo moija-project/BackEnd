@@ -3,8 +3,6 @@ package com.example.moija_project.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
-
 @Entity
 @Getter
 @Setter
@@ -13,21 +11,10 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(TeamId.class)
 public class Member {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "team_id", nullable = false)
-    private Long teamId;
-
-    @Id
-    @Column(name = "user_id", nullable = false)
-    private String userId;
-
-    @Id
-    @Column(name = "recruit_id", nullable = false)
-    private Long recruitId;
+    @EmbeddedId
+    private TeamId teamId;
 
     @Column(name = "score_team")
     private Float scoreTeam;
@@ -40,15 +27,4 @@ public class Member {
     @JoinColumn(name = "recruit_id", referencedColumnName = "recruit_id", insertable = false, updatable = false)
     private Recruit recruit;
 
-}
-
-@Getter
-@Setter
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-class TeamId implements Serializable {
-    private Long teamId;
-    private String userId;
-    private Long recruitId;
 }
