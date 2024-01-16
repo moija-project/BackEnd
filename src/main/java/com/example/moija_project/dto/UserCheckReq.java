@@ -2,6 +2,7 @@ package com.example.moija_project.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.Setter;
 
 public class UserCheckReq {
     @Getter

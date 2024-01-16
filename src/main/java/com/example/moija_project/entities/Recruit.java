@@ -64,7 +64,7 @@ public class Recruit {
     @Column(name = "leader_id", nullable = false)
     private String leaderId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE, optional = false)
     @JoinColumn(name = "leader_id", referencedColumnName = "user_id", insertable = false, updatable = false)
     private User leader;
 

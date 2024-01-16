@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
+import static com.example.moija_project.global.BaseResponseStatus.NOT_EXISTS;
 
 @Service
 @Slf4j
@@ -42,6 +43,9 @@ public class ConditionService {
     }
     public List<QnADTO> viewCondition(Long recruitId) throws BaseException{
         List<Condition> conditions = conditionRepository.findByRecruitId(recruitId);
+        if(conditions.isEmpty()) {
+            throw new BaseException(NOT_EXISTS);
+        }
         return conditions.stream()
                 .map(c ->
                     new QnADTO(c.getQuestion(),c.getAnswer()))

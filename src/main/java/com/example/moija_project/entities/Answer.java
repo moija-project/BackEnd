@@ -5,17 +5,18 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "conditions")
+@Document(collection = "answers")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Condition {
+public class Answer {
     @Id
-    @Field("condition_id")
-    private String conditionId;
-    private Long recruitId; // ObjectId("recruit_id_1")
-    private String question;
+    @Field("answer_id")
+    private String answerId;
+    private Long recruitId;
+    private String userId;
     private String answer;
+
 }

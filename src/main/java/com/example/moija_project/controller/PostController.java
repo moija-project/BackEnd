@@ -7,6 +7,7 @@ import com.example.moija_project.dto.UserCheckReq;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.global.BaseResponse;
 import com.example.moija_project.service.ConditionService;
+import com.example.moija_project.service.LikeService;
 import com.example.moija_project.service.PostService;
 import com.example.moija_project.service.UserCheckService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,9 @@ import java.util.List;
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
 import static com.example.moija_project.global.BaseResponseStatus.SUCCESS;
 
+//scheduled remover 필요!! 현재 지워진 글은 비트만 바꿔서 안보이게 하고 있으므로, 1달에 한번씩 데이터베이스 삭제, 3달 이상 지난 사용 불가능 포스트 삭제!!!
+
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/post")
@@ -25,6 +29,8 @@ public class PostController {
     private final PostService postService;
     private final UserCheckService userCheckService;
     private final ConditionService conditionService;
+
+    private final LikeService likeService;
     @PostMapping("/write")
     public BaseResponse<Void> writePost(
             @RequestBody PostReq.PostWriteReq postWriteReq
@@ -51,18 +57,6 @@ public class PostController {
         return  new BaseResponse<Void>(SUCCESS);
     }
 
-    @PostMapping("/question/{postId}")
-    public BaseResponse<List> viewQuestion(
-            @PathVariable(name="postId") Long postId,
-            @RequestBody UserCheckReq.UserIdReq userIdReq
-    ) throws BaseException, IOException {
-        if(userCheckService.check(userIdReq)){
-            List<QnADTO> conditions = conditionService.viewCondition(userIdReq.getRecruitId());
-            return new BaseResponse<List>(conditions);
-        } else {
-            throw new BaseException(BAD_ACCESS);
-        }
-    }
     @GetMapping("/list")
     public BaseResponse<PostRes.ListPostRes> loadPostList(
             @RequestParam(value="category") String category,
@@ -82,19 +76,41 @@ public class PostController {
 
     @PostMapping("/like")
     public BaseResponse<Void> likePost(
-            @RequestBody UserCheckReq userCheckReq
+            @RequestBody PostReq.PostLikeReq postLikeReq
     ) throws BaseException, IOException {
-
+        likeService.userPostLike(postLikeReq,"testman1");
         return new BaseResponse<>(SUCCESS);
     }
 
+    @PostMapping("/clip")
+    public BaseResponse<Void> clipPost(
+            @RequestBody PostReq.PostLikeReq postLikeReq
+    ) throws BaseException, IOException {
+        likeService.userPostLike(postLikeReq,"testman1");
+        return new BaseResponse<>(SUCCESS);
+    }
+
+    @PostMapping("/question/{postId}")
+    public BaseResponse<List> viewQuestion(
+            @PathVariable(name="postId") Long postId,
+            @RequestBody UserCheckReq.UserIdReq userIdReq
+    ) throws BaseException, IOException {
+        if(userCheckService.check(userIdReq)){
+            List<QnADTO> conditions = conditionService.viewCondition(userIdReq.getRecruitId());
+            return new BaseResponse<List>(conditions);
+        } else {
+            throw new BaseException(BAD_ACCESS);
+        }
+    }
+
     //waiting 스키마 / answer 컬렉션에 접근해야함.
-//    @PostMapping("/answer/{postId}")
-//    public BaseResponse<List> writeAnswer(
-//            @PathVariable(name="postId") Long postId,
-//            @RequestBody PostReq.PostAnswerReq postAnswerReq
-//    ) throws BaseException, IOException {
-//        return new BaseResponse<List>();
-//    }
+    @PostMapping("/waiting/{postId}")
+    public BaseResponse<Void> writeAnswer(
+            @PathVariable(name="postId") Long postId,
+            @RequestBody PostReq.PostWaitingReq postWaitingReq
+    ) throws BaseException, IOException {
+        postService.inWaitingQueue(postWaitingReq,postId,"testman1");
+        return new BaseResponse<>(SUCCESS);
+    }
 
 }
