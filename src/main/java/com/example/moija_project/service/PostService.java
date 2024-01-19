@@ -3,20 +3,24 @@ package com.example.moija_project.service;
 import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.dto.UserCheckReq;
-import com.example.moija_project.entities.Member;
 import com.example.moija_project.entities.Recruit;
-import com.example.moija_project.entities.TeamId;
 import com.example.moija_project.global.BaseException;
-import com.example.moija_project.repository.MemberRepository;
+import com.example.moija_project.global.BaseResponse;
 import com.example.moija_project.repository.RecruitRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.example.moija_project.global.BaseResponseStatus.*;
@@ -25,15 +29,16 @@ import static com.example.moija_project.global.BaseResponseStatus.*;
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
+    @Autowired
     private final RecruitRepository recruitRepository;
     private final ConditionService conditionService;
     private final WaitingService waitingService;
     private final MemberService memberService;
     public void writePost(PostReq.PostWriteReq postWriteReq, Long postId) throws BaseException {
         Recruit recruit;
-
         //수정일때는 어떤 것을 할지
         if(!postWriteReq.isChanged()) {
+            //해당 id의 포스트에 접근 권한이 없을경우?? - 토큰 구현 이후
             //초기에만 가능한 것들.
             recruit = Recruit.builder()
                     .leaderId(postWriteReq.getLeaderId())
@@ -49,6 +54,11 @@ public class PostService {
                     .build();
             recruit = setDupColumn(recruit,postWriteReq);
         } else {
+            //수정이 아닌데 체크되어있음?
+            if(postId == 0L) {
+                throw new BaseException(BAD_ACCESS);
+            }
+            //존재하는지 검증
             if(recruitRepository.findByRecruitIdAndIsAvailableTrue(postId).isPresent()){
                 recruit = recruitRepository.findByRecruitIdAndIsAvailableTrue(postId).get();
             } else {
@@ -70,12 +80,15 @@ public class PostService {
         memberService.save(recruit.getRecruitId(),recruit.getLeaderId());
 
         //조건이 있다면
-        if(postWriteReq.getNumCondition() != 0) {
+        if(postWriteReq.getNumCondition() != 0
+                && postWriteReq.getNumCondition() == postWriteReq.getConditions().size()) {
             //recruit의 id를 가져와서 같이 서비스로 넘김
             conditionService.writeQuestions(
                     postWriteReq.getConditions(),
                     recruit.getRecruitId()
             );
+        } else {
+            throw new BaseException(NEED_MORE_WRITE);
         }
     }
 
@@ -98,39 +111,48 @@ public class PostService {
         return recruit;
     }
 
-    public PostRes.ListPostRes list(String category, String view_type) throws BaseException {
+    public List<PostRes.ListPostRes> list(String category, String view_type, Optional<String> userId) throws BaseException {
         ArrayList<Recruit> recruitList = new ArrayList<>();
+        if(userId.isPresent()) {
+            recruitList.addAll(recruitRepository.findAllByLeaderIdAndIsAvailableTrue(userId.get()));
 
-        //데이터베이스에서 빼놓은 entity
-        switch(category){
-            case "all":
-                recruitList.addAll(recruitRepository.findAllByIsAvailableTrueOrderByStateRecruitDescLatestWriteDesc());
-                break;
-            case "hobby":
-            case "language":
-            case "study" :
-            case "employ":
-            case "etc" :
-                recruitList.addAll(recruitRepository.findAllByCategoryAndIsAvailableTrueOrderByStateRecruit(category));
-                break;
-            default:
-                throw new BaseException(BAD_ACCESS);
+        } else {
+
+            //데이터베이스에서 빼놓은 entity
+            switch (category) {
+                case "all":
+                    recruitList.addAll(recruitRepository.findAllByIsAvailableTrueOrderByStateRecruitDescLatestWriteDesc());
+                    break;
+                case "hobby":
+                case "language":
+                case "study":
+                case "employ":
+                case "etc":
+                    recruitList.addAll(recruitRepository.findAllByCategoryAndIsAvailableTrueOrderByStateRecruit(category));
+                    break;
+                default:
+                    throw new BaseException(BAD_ACCESS);
+            }
+
+            switch (view_type) {
+                case "latest":
+                    break;
+                case "most_view":
+                    recruitList.sort(Comparator.comparing(Recruit::getViews));
+                    break;
+                case "most_like":
+                    recruitList.sort(Comparator.comparing(Recruit::getLikes));
+                    break;
+                default:
+                    throw new BaseException(BAD_ACCESS);
+            }
         }
 
-        PostRes.ListPostRes response = new PostRes.ListPostRes();
-        //entity의 List에서 response로 전달
-        response.setPost_list(recruitList.stream().map( recruit ->
-            new PostRes.ListPostRes.Post(recruit.getRecruitId(),
-                    recruit.isStateRecruit(),
-                    recruit.getTitle(),
-                    recruit.getContents().substring(0,20)+"...",
-                    recruit.getLeader().getNickname(),
-                    recruit.getLatestWrite(),
-                    recruit.getLikes(),
-                    recruit.getViews()
-                )
-            ).collect(Collectors.toList()));
-        return response;
+        if(recruitList.isEmpty()) {
+            throw new BaseException(NOT_EXISTS);
+        }
+
+        return makeList(recruitList);
     }
 
     public PostRes.ReadPostRes view(Long postId) throws BaseException {
@@ -170,5 +192,55 @@ public class PostService {
             throw new BaseException(WAITING_ALREADY_EXISTS);
         //question개수와 answer개수가 다르다면 답변을 덜 쓴거니 다 채우라고 해야지 -> 이거 프론트에서 처리
         waitingService.saveWaiting(postWaitingReq,postId,userId);
+    }
+
+    public void renew(Long postId) throws BaseException{
+        //시간 차이 처리
+        long current = System.currentTimeMillis();
+        Optional<Recruit> recruitOptional =  recruitRepository.findByRecruitIdAndIsAvailableTrue(postId);
+        long latest;
+        if(recruitOptional.isPresent()) {
+            latest = recruitOptional.get().getLatestWrite().getTime();
+        } else {
+            throw new BaseException(NOT_EXISTS);
+        }
+        short gap = (short) ((current - latest) / (60 * 60 * 1000));
+        //조건에 만족 한다면 서비스를 부름
+        if(gap >= 30) {
+            recruitRepository.updateTimeLatest(new Timestamp(current),postId);
+        } else {
+            throw new BaseException(CURRENT_UNAVAILABLE);
+        }
+
+
+    }
+
+    public boolean existPost(Long recruitId) throws BaseException{
+        return recruitRepository.existsByRecruitIdAndIsAvailableTrue(recruitId);
+    }
+
+    public List<PostRes.ListPostRes> makeList(List<Recruit> recruits) {
+        return recruits.stream().map(r ->
+                PostRes.ListPostRes.builder()
+                        .post_id(r.getRecruitId())
+                        .title(r.getTitle())
+                        .state_recruit(r.isStateRecruit())
+                        .contents(r.getContents().substring(0,20)+"...")
+                        .leader_nickname(r.getLeader().getNickname())
+                        .latest_write(r.getLatestWrite())
+                        .likes(r.getLikes())
+                        .views(r.getViews())
+                        .build()
+        ).toList();
+    }
+
+    //true이면 재개 false이면 종료
+    public void stateRecruit(Long postId, boolean stateRecruit) throws BaseException {
+        if(!recruitRepository.existsByRecruitIdAndIsAvailableTrue(postId))
+            throw new BaseException(NOT_EXISTS);
+        if(stateRecruit == recruitRepository.isRecruiting(postId)) {
+            throw new BaseException(ALrEADY_RECRUIT);
+        }
+        recruitRepository.updateStateRecruit(postId,stateRecruit);
     }
 }

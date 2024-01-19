@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
-import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
-import static com.example.moija_project.global.BaseResponseStatus.SUCCESS;
+import static com.example.moija_project.global.BaseResponseStatus.*;
 
 //scheduled remover 필요!! 현재 지워진 글은 비트만 바꿔서 안보이게 하고 있으므로, 1달에 한번씩 데이터베이스 삭제, 3달 이상 지난 사용 불가능 포스트 삭제!!!
 
@@ -58,12 +58,12 @@ public class PostController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<PostRes.ListPostRes> loadPostList(
+    public BaseResponse<List> loadPostList(
             @RequestParam(value="category") String category,
             @RequestParam(value = "view_type") String viewType
     ) throws BaseException, IOException {
-        PostRes.ListPostRes response = postService.list(category,viewType);
-        return new BaseResponse<>(response);
+        List<PostRes.ListPostRes> response = postService.list(category,viewType,Optional.empty());
+        return new BaseResponse<List>(response);
     }
 
     @GetMapping("/page")
@@ -78,7 +78,10 @@ public class PostController {
     public BaseResponse<Void> likePost(
             @RequestBody PostReq.PostLikeReq postLikeReq
     ) throws BaseException, IOException {
-        likeService.userPostLike(postLikeReq,"testman1");
+        if(!postService.existPost(postLikeReq.getRecruitId())) {
+            throw new BaseException(NOT_EXISTS);
+        }
+        likeService.userPostLike(postLikeReq,"testman2");
         return new BaseResponse<>(SUCCESS);
     }
 
@@ -86,7 +89,7 @@ public class PostController {
     public BaseResponse<Void> clipPost(
             @RequestBody PostReq.PostLikeReq postLikeReq
     ) throws BaseException, IOException {
-        likeService.userPostLike(postLikeReq,"testman1");
+        likeService.userPostLike(postLikeReq,"testman2");
         return new BaseResponse<>(SUCCESS);
     }
 
@@ -95,7 +98,9 @@ public class PostController {
             @PathVariable(name="postId") Long postId,
             @RequestBody UserCheckReq.UserIdReq userIdReq
     ) throws BaseException, IOException {
-        if(userCheckService.check(userIdReq)){
+        if(!postService.existPost(postId))
+            throw new BaseException(NOT_EXISTS);
+        if(userCheckService.check(userIdReq)){//이게 필요할까 과연?
             List<QnADTO> conditions = conditionService.viewCondition(userIdReq.getRecruitId());
             return new BaseResponse<List>(conditions);
         } else {
@@ -109,7 +114,29 @@ public class PostController {
             @PathVariable(name="postId") Long postId,
             @RequestBody PostReq.PostWaitingReq postWaitingReq
     ) throws BaseException, IOException {
-        postService.inWaitingQueue(postWaitingReq,postId,"testman1");
+        postService.inWaitingQueue(postWaitingReq,postId,"testman2");
+        return new BaseResponse<>(SUCCESS);
+    }
+
+    @PostMapping("/renew/{postId}")
+    public BaseResponse<Void> renew(
+            @PathVariable(name = "postId") Long postId
+    ) throws BaseException, IOException {
+        postService.renew(postId);
+        return new BaseResponse<Void>(SUCCESS);
+    }
+    @PostMapping("/stop/{postId}")
+    public BaseResponse<Void> stopRecruit(
+            @PathVariable Long postId
+    ) throws BaseException {
+        postService.stateRecruit(postId,false);
+        return new BaseResponse<>(SUCCESS);
+    }
+    @PostMapping("/start/{postId}")
+    public BaseResponse<Void> startRecruit(
+            @PathVariable Long postId
+    ) throws BaseException {
+        postService.stateRecruit(postId,false);
         return new BaseResponse<>(SUCCESS);
     }
 

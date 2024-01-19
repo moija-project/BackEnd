@@ -33,10 +33,19 @@ public enum BaseResponseStatus {
     LIKE_NOT_EXISTS(false, 4011, "좋아요를 누르지 않아서 취소할 수 없습니다."),
     CANNOT_LIKE_MINE(false,4012, "내 게시물은 좋아할 수 없습니다."),
 
-    CANNOT_CLIP_MINE(false,4013 , "내 게시물은 스크랩하지 않습니다"),
+    CANNOT_CLIP_MINE(false,4013 , "내 게시물은 스크랩하지 않습니다."),
     WAITING_ALREADY_EXISTS(false, 4014, "이 모임에 대기하고 있습니다. 모임장이 승락할 때까지 기다려주세요."),
 
-    TEAM_ALREADY_JOINED(false,4015, "이미 이 모임원입니다!" );
+    TEAM_ALREADY_JOINED(false,4015, "이미 이 모임원입니다!" ),
+    CURRENT_UNAVAILABLE(false,4016 ,"지금은 가능하지 않습니다." ),
+    USER_NOT_EXISTS(false, 4017, "해당 회원이 존재하지 않습니다."),
+
+
+
+
+
+    NEED_MORE_WRITE(false,4020 ,"작성을 더 확인해주세요." ),
+    ALrEADY_RECRUIT(false, 4018, "이미 모집중이거나, 모집을 중단했습니다.");
 
 
     private final boolean isSuccess;

@@ -1,10 +1,9 @@
 package com.example.moija_project.service;
 
-import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.QnADTO;
 import com.example.moija_project.entities.Condition;
 import com.example.moija_project.global.BaseException;
-import com.example.moija_project.repository.ConditionRepository;
+import com.example.moija_project.mongo.ConditionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

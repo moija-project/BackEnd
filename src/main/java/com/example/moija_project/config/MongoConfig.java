@@ -20,7 +20,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoClient mongoClient() {
-        ConnectionString connectionString = new ConnectionString("mongodb://localhost:27017/moija");
+        ConnectionString connectionString = new ConnectionString("mongodb://root:3322@moija-mongodb-1:27017/moija?authSource=admin&authMechanism=SCRAM-SHA-1");
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();
@@ -30,6 +30,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     public Collection getMappingBasePackages() {
-        return Collections.singleton("com.baeldung");
+        return Collections.singleton("com.example.moija_project");
     }
 }
