@@ -21,16 +21,14 @@ public class MemberService {
     public void save(Long recruitId,String userId) throws BaseException {
         memberRepository.saveAndFlush(
                 Member.builder()
-                        .teamId(new TeamId(userId, recruitId))
+                        .userId(userId)
+                        .recruitId(recruitId)
                         .build()
         );
     }
 
     public boolean existTeamUser(Long postId, String userId) {
-        Optional<Member> memberOptional = memberRepository.findByRecruitIdAndUserId(postId,userId);
-        if(memberOptional.isPresent())
-            return true;
-        else
-            return false;
+            return memberRepository.existsByRecruitIdAndUserId(postId,userId);
     }
+
 }

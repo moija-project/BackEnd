@@ -1,4 +1,4 @@
-package com.example.moija_project.repository;
+package com.example.moija_project.mongo;
 
 import com.example.moija_project.entities.Condition;
 import org.springframework.data.jpa.repository.Query;

@@ -15,7 +15,7 @@ public class Answer {
     @Id
     @Field("answer_id")
     private String answerId;
-    private Long recruitId;
+    private Long waitingId;
     private String userId;
     private String answer;
 

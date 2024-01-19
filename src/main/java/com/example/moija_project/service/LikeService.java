@@ -16,7 +16,9 @@ import static com.example.moija_project.global.BaseResponseStatus.*;
 @Slf4j
 @RequiredArgsConstructor
 public class LikeService {
+    @Autowired
     LikeRepository likeRepository;
+    @Autowired
     RecruitRepository recruitRepository;
     public void userPostLike(PostReq.PostLikeReq likeReq,String userId) throws BaseException {
         Long recruitId = likeReq.getRecruitId();

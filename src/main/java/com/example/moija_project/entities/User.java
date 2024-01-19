@@ -23,7 +23,7 @@ public class User {
     private String nickname;
 
     @Column(name = "gender", nullable = false)
-    private boolean gender = false;
+    private boolean gender;
 
     @Column(name = "birth", nullable = false)
     private LocalDate birth;

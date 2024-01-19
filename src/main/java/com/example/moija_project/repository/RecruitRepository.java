@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
 
     Optional<Recruit> findByRecruitIdAndIsAvailableTrue(Long Id);
 
+    List<Recruit> findAllByLeaderIdAndIsAvailableTrue(String leaderId);
     List<Recruit> findAllByIsAvailableTrueOrderByStateRecruitDescLatestWriteDesc();
     List<Recruit> findAllByCategoryAndIsAvailableTrueOrderByStateRecruit(String category);
 
@@ -45,5 +47,18 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
     Optional<String> findLeaderIdByRecruitId(@Param("recruitId") Long recruitId);
 
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE Recruit r SET r.latestWrite= :latest where r.recruitId= :recruitId")
+    void updateTimeLatest(@Param(value = "latest") Timestamp latest, @Param(value = "recruitId") Long recruitId);
 
+    boolean existsByRecruitIdAndIsAvailableTrue(Long recruitId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Recruit r SET r.stateRecruit=:stateRecruit where r.recruitId= :postId")
+    void updateStateRecruit(@Param(value = "postId")Long postId, @Param(value = "stateRecruit")boolean stateRecruit);
+
+    @Query("SELECT r.stateRecruit FROM Recruit r WHERE r.recruitId= :postId")
+    boolean isRecruiting(@Param(value = "postId")Long postId);
 }
