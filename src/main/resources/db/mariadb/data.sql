@@ -5,7 +5,6 @@ INSERT INTO `user` (
     `birth`,
     `phone_number`,
     `name`,
-    `profile`,
     `time_join`,
     `reliability_user`,
     `password`,
@@ -31,7 +30,6 @@ INSERT INTO `user` (
     `birth`,
     `phone_number`,
     `name`,
-    `profile`,
     `time_join`,
     `reliability_user`,
     `password`,
@@ -49,3 +47,7 @@ INSERT INTO `user` (
              'hashed_password',
              true
          );
+
+UPDATE moija.user t
+SET t.profile = NULL
+WHERE t.user_id LIKE 'testman2'

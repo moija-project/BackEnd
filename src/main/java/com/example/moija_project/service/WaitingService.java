@@ -4,8 +4,7 @@ import com.example.moija_project.dto.MypageRes;
 import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.dto.QnADTO;
-import com.example.moija_project.entities.Answer;
-import com.example.moija_project.entities.User;
+import com.example.moija_project.mongo_entity.Answer;
 import com.example.moija_project.entities.Waiting;
 import com.example.moija_project.extractor.Genarator;
 import com.example.moija_project.global.BaseException;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
 import static com.example.moija_project.global.BaseResponseStatus.NOT_EXISTS;
@@ -33,8 +31,6 @@ public class WaitingService {
     ConditionService conditionService;
     @Autowired
     MemberService memberService;
-    @Autowired
-    PostService postService;
     public void saveWaiting(PostReq.PostWaitingReq postWaitingReq, Long postId, String userId) throws BaseException {
         Waiting waiting = Waiting.builder()
                 .isAsk(postWaitingReq.isAsk())
@@ -52,27 +48,28 @@ public class WaitingService {
         return waitingRepository.existsByRecruitIdAndUserId(teamId,userId);
     }
 
-    public List<MypageRes.WaitingListRes> loadWaitingList(String userId) throws BaseException {
-        //리크루트 이름 다 가져옴
-        List<MypageRes.WaitingListRes> myposts = postService.list("all","latest",Optional.of(userId)).stream()
-                .map(post-> MypageRes.WaitingListRes.builder()
-                        .latestWrite(post.getLatest_write())
-                        .title(post.getTitle())
-                        .postId(post.getPost_id())
-                        .build()).toList();
+    public List<MypageRes.WaitingListRes> loadWaitingList(List<PostRes.ListPostRes> myposts) throws BaseException {
+        ArrayList<MypageRes.WaitingListRes> response = new ArrayList<>();
         //리크루트 이름으로부터 웨이팅 정보를 다 가져옴
-        for (MypageRes.WaitingListRes post : myposts) {
-            List<Waiting> waitings = waitingRepository.findAllByRecruitId(post.getPostId());
+        for (PostRes.ListPostRes post : myposts) {
+            List<Waiting> waitings = waitingRepository.findAllByRecruitId(post.getPost_id());
             List<MypageRes.MemDto> members = waitings.stream().map(w ->
                     MypageRes.MemDto.builder()
                             .waitingId(w.getWaitingId())
                             .is_ask(w.isAsk())
                             .nickname(w.getUser().getNickname())
                             .build()).toList();
-            post.setUsers(members);
+
+            //post를 받아온 객체를 이 상황에 맞게 매핑
+            response.add(MypageRes.WaitingListRes.builder()
+                            .title(post.getTitle())
+                            .postId(post.getPost_id())
+                            .latestWrite(post.getLatest_write())
+                            .users(members)
+                    .build());
         }
 
-        return myposts;
+        return response;
     }
 
     public MypageRes.WaitingRes viewWaiting(Long waitingId) throws BaseException {

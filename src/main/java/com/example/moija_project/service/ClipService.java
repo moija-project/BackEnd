@@ -9,6 +9,7 @@ import com.example.moija_project.repository.ClipRepository;
 import com.example.moija_project.repository.RecruitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +21,11 @@ import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
 @Slf4j
 @RequiredArgsConstructor
 public class ClipService {
+    @Autowired
     ClipRepository clipRepository;
+    @Autowired
     RecruitRepository recruitRepository;
+    @Autowired
     PostService postService;
 
 

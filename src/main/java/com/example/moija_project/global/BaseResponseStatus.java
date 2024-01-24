@@ -40,12 +40,13 @@ public enum BaseResponseStatus {
     CURRENT_UNAVAILABLE(false,4016 ,"지금은 가능하지 않습니다." ),
     USER_NOT_EXISTS(false, 4017, "해당 회원이 존재하지 않습니다."),
 
+    ALREADY_RECRUIT(false, 4018, "이미 모집중이거나, 모집을 중단했습니다."),
+    NEED_MORE_WRITE(false,4019 ,"작성을 더 확인해주세요." ),
 
-
-
-
-    NEED_MORE_WRITE(false,4020 ,"작성을 더 확인해주세요." ),
-    ALrEADY_RECRUIT(false, 4018, "이미 모집중이거나, 모집을 중단했습니다.");
+    LOGIN_FIRST(false,4020,"먼저 로그인을 진행해주세요."),
+    NOT_EDIT(false,4021,"변경할 필요가 없습니다."),
+    NICKNAME_CHANGE_AVAILABLE(false, 4022, "닉네임 변경이 너무 잦습니다. 이전 변경으로 부터 3개월 이후에 시도해주세요."),
+    DUPLICATE_NICKNAME(false, 4023, "중복된 닉네임이 있습니다. 다른 닉네임을 설정해주세요.");
 
 
     private final boolean isSuccess;

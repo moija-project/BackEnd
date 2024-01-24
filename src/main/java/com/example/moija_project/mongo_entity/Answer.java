@@ -1,21 +1,22 @@
-package com.example.moija_project.entities;
+package com.example.moija_project.mongo_entity;
 
 import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "conditions")
+@Document(collection = "answers")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Condition {
+public class Answer {
     @Id
-    @Field("condition_id")
-    private String conditionId;
-    private Long recruitId; // ObjectId("recruit_id_1")
-    private String question;
+    @Field("answer_id")
+    private String answerId;
+    private Long waitingId;
+    private String userId;
     private String answer;
+
 }

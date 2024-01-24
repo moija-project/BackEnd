@@ -1,6 +1,6 @@
 package com.example.moija_project.service;
 
-import com.example.moija_project.entities.Answer;
+import com.example.moija_project.mongo_entity.Answer;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.mongo.AnswerRepository;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
@@ -36,7 +35,7 @@ public class AnswerService {
     }
 
     public void deleteByWaitingId(Long waitingId) throws BaseException {
-        if(!answerRepository.existsByWaitingId())
+        if(!answerRepository.existsByWaitingId(waitingId))
             throw new BaseException(BAD_ACCESS);
         answerRepository.deleteAllByWaitingId(waitingId);
     }

@@ -1,9 +1,7 @@
 package com.example.moija_project.mongo;
 
-import com.example.moija_project.entities.Condition;
-import org.springframework.data.jpa.repository.Query;
+import com.example.moija_project.mongo_entity.Condition;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
