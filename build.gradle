@@ -48,11 +48,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     // implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.3.2'
+    implementation 'org.springframework.cloud:spring-cloud-gcp-starter-storage:1.2.8.RELEASE'
+
 
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.Period;
 
 public class Genarator {
-    public String changeToGenaration(LocalDate birth) {
+    public static String changeToGenaration(LocalDate birth) {
         int age = Period.between(birth,LocalDate.now()).getYears();
         if(age < 7) {
             return "어린이";
@@ -33,5 +33,10 @@ public class Genarator {
         }else {
             return "신";
         }
+    }
+
+    public static String changeToBornIn(LocalDate birth) {
+        int born = birth.getYear() % 100;
+        return String.format("%02d년생",born);
     }
 }

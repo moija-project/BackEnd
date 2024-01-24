@@ -1,7 +1,7 @@
 package com.example.moija_project.service;
 
 import com.example.moija_project.dto.QnADTO;
-import com.example.moija_project.entities.Condition;
+import com.example.moija_project.mongo_entity.Condition;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.mongo.ConditionRepository;
 import lombok.RequiredArgsConstructor;

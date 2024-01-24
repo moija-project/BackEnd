@@ -34,9 +34,8 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Lob
-    @Column(name = "profile", columnDefinition= "BLOB")
-    private Blob profile;
+    @Column(name = "profile")
+    private String profile;
 
     @Column(name = "time_join", nullable = false)
     private Timestamp timeJoin;

@@ -1,5 +1,7 @@
 package com.example.moija_project;
 
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -26,5 +28,6 @@ public class MoijaProjectApplication extends SpringBootServletInitializer {
     public RequestContextListener requestContextListener(){
         return new RequestContextListener();
     }
+
 
 }

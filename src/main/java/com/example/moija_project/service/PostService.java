@@ -1,5 +1,6 @@
 package com.example.moija_project.service;
 
+import com.example.moija_project.dto.MypageRes;
 import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.dto.UserCheckReq;
@@ -69,7 +70,6 @@ public class PostService {
             recruit.setTimeLastWrite(new Timestamp(System.currentTimeMillis()));
             //이게 '최신순'의 기준이 되고, 따로 이용자에게 보여지는 시간은 아님
             recruit.setLatestWrite(new Timestamp(System.currentTimeMillis()));
-            recruit.setChanged(true);
             recruitRepository.notAvailable(postId);
         }
 
@@ -239,8 +239,9 @@ public class PostService {
         if(!recruitRepository.existsByRecruitIdAndIsAvailableTrue(postId))
             throw new BaseException(NOT_EXISTS);
         if(stateRecruit == recruitRepository.isRecruiting(postId)) {
-            throw new BaseException(ALrEADY_RECRUIT);
+            throw new BaseException(ALREADY_RECRUIT);
         }
         recruitRepository.updateStateRecruit(postId,stateRecruit);
     }
+
 }

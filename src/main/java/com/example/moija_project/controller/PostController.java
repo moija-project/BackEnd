@@ -6,11 +6,9 @@ import com.example.moija_project.dto.QnADTO;
 import com.example.moija_project.dto.UserCheckReq;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.global.BaseResponse;
-import com.example.moija_project.service.ConditionService;
-import com.example.moija_project.service.LikeService;
-import com.example.moija_project.service.PostService;
-import com.example.moija_project.service.UserCheckService;
+import com.example.moija_project.service.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -26,11 +24,17 @@ import static com.example.moija_project.global.BaseResponseStatus.*;
 @RequiredArgsConstructor
 @RequestMapping("/post")
 public class PostController {
+    @Autowired
     private final PostService postService;
+    @Autowired
     private final UserCheckService userCheckService;
+    @Autowired
     private final ConditionService conditionService;
-
+    @Autowired
     private final LikeService likeService;
+    @Autowired
+    private final ClipService clipService;
+
     @PostMapping("/write")
     public BaseResponse<Void> writePost(
             @RequestBody PostReq.PostWriteReq postWriteReq
@@ -87,9 +91,9 @@ public class PostController {
 
     @PostMapping("/clip")
     public BaseResponse<Void> clipPost(
-            @RequestBody PostReq.PostLikeReq postLikeReq
+            @RequestBody PostReq.PostClipReq postClipReq
     ) throws BaseException, IOException {
-        likeService.userPostLike(postLikeReq,"testman2");
+        clipService.userPostClip(postClipReq,"testman2");
         return new BaseResponse<>(SUCCESS);
     }
 

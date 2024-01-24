@@ -37,7 +37,4 @@ public class MypageRes {
         boolean is_ask;
 
     }
-    @Setter@Builder@Getter@AllArgsConstructor@NoArgsConstructor
-    public static class ProfileRes {
-    }
 }

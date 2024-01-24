@@ -9,7 +9,7 @@ CREATE TABLE `user` (
                         `birth`	DATE	NOT NULL,
                         `phone_number`	INT(11)	NOT NULL,
                         `name`	VARCHAR(20)	NOT NULL,
-                        `profile`	BLOB	NULL,
+                        `profile`	VARCHAR(40)	NULL,
                         `time_join`	TIMESTAMP	NOT NULL,
                         `reliability_user`	FLOAT	NOT NULL	DEFAULT 3,
                         `password`	VARCHAR(50)	NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE `recruit` (
                            `latest_write`	TIMESTAMP	NOT NULL,
                            `leader_id`	VARCHAR(15)	NOT NULL,
                            CONSTRAINT PRIMARY KEY (`recruit_id`),
-                           CONSTRAINT `FK_USER_TO_RECRUIT_1` FOREIGN KEY (`leader_id`) REFERENCES `USER` (`user_id`)
+                           CONSTRAINT `FK_USER_TO_RECRUIT_1` FOREIGN KEY (`leader_id`) REFERENCES `user` (`user_id`)
 );
 
 CREATE TABLE `member` (
@@ -48,8 +48,8 @@ CREATE TABLE `member` (
                                                   `user_id`,
                                                   `recruit_id`
                               ),
-                          CONSTRAINT `FK_USER_TO_MEMBER_1` FOREIGN KEY (`user_id`) REFERENCES `USER` (`user_id`),
-                          CONSTRAINT `FK_RECRUIT_TO_MEMBER_1` FOREIGN KEY (`recruit_id`) REFERENCES `RECRUIT` (`recruit_id`)
+                          CONSTRAINT `FK_USER_TO_MEMBER_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+                          CONSTRAINT `FK_RECRUIT_TO_MEMBER_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
 CREATE TABLE `waiting` (
@@ -60,8 +60,8 @@ CREATE TABLE `waiting` (
                            `user_id`	VARCHAR(15)	NOT NULL,
                            `recruit_id`	BIGINT	NOT NULL,
                            CONSTRAINT PRIMARY KEY (`waiting_id`),
-                           CONSTRAINT `FK_USER_TO_WAITING_1` FOREIGN KEY (`user_id`) REFERENCES `USER` (`user_id`),
-                           CONSTRAINT `FK_RECRUIT_TO_WAITING_1` FOREIGN KEY (`recruit_id`) REFERENCES `RECRUIT` (`recruit_id`)
+                           CONSTRAINT `FK_USER_TO_WAITING_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+                           CONSTRAINT `FK_RECRUIT_TO_WAITING_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
 CREATE TABLE `clip` (
@@ -73,8 +73,8 @@ CREATE TABLE `clip` (
                                                 `user_id`,
                                                 `recruit_id`
                             ),
-                        CONSTRAINT `FK_USER_TO_CLIP_1` FOREIGN KEY (`user_id`) REFERENCES `USER` (`user_id`),
-                        CONSTRAINT `FK_RECRUIT_TO_CLIP_1` FOREIGN KEY (`recruit_id`) REFERENCES `RECRUIT` (`recruit_id`)
+                        CONSTRAINT `FK_USER_TO_CLIP_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+                        CONSTRAINT `FK_RECRUIT_TO_CLIP_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
 CREATE TABLE `score` (
@@ -83,8 +83,8 @@ CREATE TABLE `score` (
                          `grant_id`	VARCHAR(15) NOT NULL,
                          `granted_id`	VARCHAR(15) NOT NULL,
                          CONSTRAINT PRIMARY KEY (`score_id`),
-                         CONSTRAINT `FK_USER_TO_SCORE_1` FOREIGN KEY (`grant_id`) REFERENCES `USER` (`user_id`),
-                         CONSTRAINT `FK_USER_TO_SCORE_2` FOREIGN KEY (`granted_id`) REFERENCES `USER` (`user_id`)
+                         CONSTRAINT `FK_USER_TO_SCORE_1` FOREIGN KEY (`grant_id`) REFERENCES `user` (`user_id`),
+                         CONSTRAINT `FK_USER_TO_SCORE_2` FOREIGN KEY (`granted_id`) REFERENCES `user` (`user_id`)
 );
 
 CREATE TABLE `likes` (
@@ -96,8 +96,8 @@ CREATE TABLE `likes` (
                             `user_id`,
                             `recruit_id`
                             ),
-                        CONSTRAINT `FK_USER_TO_LIKE_1` FOREIGN KEY (`user_id`) REFERENCES `USER` (`user_id`),
-                        CONSTRAINT `FK_RECRUIT_TO_LIKE_1` FOREIGN KEY (`recruit_id`) REFERENCES `RECRUIT` (`recruit_id`)
+                        CONSTRAINT `FK_USER_TO_LIKE_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+                        CONSTRAINT `FK_RECRUIT_TO_LIKE_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
 
