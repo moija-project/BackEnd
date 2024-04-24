@@ -1,8 +1,7 @@
 package com.example.moija_project.entities;
 
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter

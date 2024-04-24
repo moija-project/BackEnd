@@ -6,6 +6,10 @@ import lombok.*;
 import java.sql.Blob;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -14,7 +18,7 @@ import java.time.LocalDate;
 @Table(name = "user")
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User{
     @Id
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -29,7 +33,7 @@ public class User {
     private LocalDate birth;
 
     @Column(name = "phone_number", nullable = false)
-    private int phoneNumber;
+    private String phoneNumber;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -46,7 +50,14 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "is_available", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
-    private boolean isAvailable;
+    //임시1!!!!!!!!!!!
+    @Column(name = "is_enabled", nullable = false)
+    private boolean isEnabled;
+    @Column(name = "is_account_nonlocked", nullable = false)
+    private boolean isAccountNonLocked;
+    @Column(name= "email", nullable = false)
+    private String email;
+    @Column(name = "uuid", nullable = false)
+    private String uuid;
 
 }
