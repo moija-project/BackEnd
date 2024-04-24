@@ -71,16 +71,23 @@ public class WaitingService {
 
         return response;
     }
+    public List<MypageRes.AskListRes> loadMyRequest(String userId) {
+        List<Waiting> myWaitings =  waitingRepository.findAllByUserId(userId);
+        return myWaitings.stream().map(MypageRes.AskListRes::from).toList();
+    }
 
-    public MypageRes.WaitingRes viewWaiting(Long waitingId) throws BaseException {
+    public MypageRes.WaitingRes viewWaiting(Long waitingId, String leaderId) throws BaseException {
         Optional<Waiting> waiting = waitingRepository.findByWaitingId(waitingId);
 
         if(waiting.isPresent()) {
             MypageRes.WaitingRes waitingRes = MypageRes.WaitingRes.builder()
                     .is_ask(waiting.get().isAsk())
+                    .userId(waiting.get().getUserId())
+                    .profileUrl(waiting.get().getUser().getProfile())
+                    .reliabilityUser(waiting.get().getUser().getReliabilityUser())
                     .nickname(waiting.get().getUser().getNickname())
                     .gender(waiting.get().getUser().isGender() ? "여":"남")
-                    .genaration(new Genarator().changeToGenaration(waiting.get().getUser().getBirth()))
+                    .genaration(Genarator.changeToBornIn(waiting.get().getUser().getBirth()))
                     .build();
             List<QnADTO> qnaList = conditionService.viewCondition(waiting.get().getRecruitId());
             List<Answer> answers = answerService.findAllByWaitingId(waitingId);
@@ -98,7 +105,7 @@ public class WaitingService {
 
     }
 
-    public void acceptOrDeny(Long waitingId, boolean isAccept) throws BaseException {
+    public void acceptOrDeny(Long waitingId, boolean isAccept, String leaderId) throws BaseException {
         if(!waitingRepository.existsById(waitingId))
             throw new BaseException(BAD_ACCESS);
         Waiting waitingInfo = waitingRepository.findByWaitingId(waitingId).get();
@@ -114,4 +121,6 @@ public class WaitingService {
         waitingRepository.deleteById(waitingId);
 
     }
+
+
 }

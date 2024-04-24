@@ -23,10 +23,10 @@ public class LikeService {
     public void userPostLike(PostReq.PostLikeReq likeReq,String userId) throws BaseException {
         Long recruitId = likeReq.getRecruitId();
         //내 게시물의 좋아요를 누를 때
-        if(recruitRepository.findLeaderIdByRecruitId(recruitId).isPresent() &&
-                recruitRepository.findLeaderIdByRecruitId(recruitId).get().equals(userId)) {
-            throw new BaseException(CANNOT_LIKE_MINE);
-        }
+//        if(recruitRepository.findLeaderIdByRecruitId(recruitId).isPresent() &&
+//                recruitRepository.findLeaderIdByRecruitId(recruitId).get().equals(userId)) {
+//            throw new BaseException(CANNOT_LIKE_MINE);
+//        }
         //좋아요를 누를때
         if(likeReq.getVote() == 1) {
             if(likeRepository.existsByRecruitIdAndUserId(recruitId,userId)) {
@@ -54,4 +54,7 @@ public class LikeService {
         }
     }
 
+    public boolean existsByRecruitIdAndUserId(Long recruitId,String userId) {
+        return likeRepository.existsByRecruitIdAndUserId(recruitId, userId);
+    }
 }

@@ -11,10 +11,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -31,13 +34,16 @@ public class UserService {
     GCSService gcsService;
     @Autowired
     NicknameRepository nicknameRepository;
+
     public UserRes.ProfileRes loadProfile(String userId) throws BaseException, IOException {
         Optional<User> userOptional = userRepository.findById(userId);
         if(userOptional.isPresent()) {
             return UserRes.ProfileRes.builder()
                     .nickname(userOptional.get().getNickname())
                     .bornIn(Genarator.changeToBornIn(userOptional.get().getBirth()))
-                    .profilePhotoUrl(gcsService.readGcsFile(userOptional.get().getProfile()==null? Optional.empty():Optional.of(userOptional.get().getProfile())))
+                    .profilePhotoUrl(userOptional.get().getProfile())
+                    .gender(userOptional.get().isGender()?"여":"남")
+                    .userId(userId)
                     .reliabilityUser(userOptional.get().getReliabilityUser())
                     .build();
         }else {
@@ -46,12 +52,14 @@ public class UserService {
     }
 
     @Transactional
-    public void saveProfile(String fileName,String data, String userId) throws BaseException, IOException {
+    public void saveProfile(String fileName, MultipartFile image, String userId) throws BaseException, IOException, NoSuchAlgorithmException, InvalidKeyException {
         Optional<User> userOptional = userRepository.findById(userId);
         if(userOptional.isPresent()) {
-            fileName = String.format("%s_profile",userOptional.get().getNickname())+fileName;
-            String gcsName = gcsService.writeGcsFile(fileName,data);
-            userRepository.updateProfile(gcsName,userId);
+            //원래의 파일 이름은 무시함.
+            fileName = String.format("%s_profile.jpg",userOptional.get().getUserId());
+
+            String gcsUrl = gcsService.writeProfile(fileName,image);
+            userRepository.updateProfile(gcsUrl,userId);
         } else {
             throw new BaseException(LOGIN_FIRST);
         }
@@ -73,12 +81,11 @@ public class UserService {
                     //90일 이상 되었다면
                     // 현재 날짜와 시간
                     LocalDateTime currentDate = LocalDateTime.now();
-
                     // 90일 이전의 날짜와 시간 계산
                     LocalDateTime ninetyDaysAgo = currentDate.minus(90, ChronoUnit.DAYS);
 
                     // 현재로부터 90일 이전인지 검증
-                    if (currentDate.isBefore(ninetyDaysAgo)) {
+                    if (ninetyDaysAgo.isBefore(nickname.getLastModifiedDate())) {
                         nicknameRepository.save(Nickname.builder()
                                 .userId(userId)
                                 .lastModifiedDate( currentDate )
@@ -97,4 +104,5 @@ public class UserService {
             throw new BaseException(DUPLICATE_NICKNAME);
         }
     }
+
 }
