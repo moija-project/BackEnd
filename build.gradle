@@ -14,14 +14,14 @@ jib {
         image = "openjdk:17-jdk"
         platforms {
             platform {
-                architecture = 'arm64'
+                architecture = 'amd64'
                 os = 'linux'
             }
         }
     }
     to {
         image = "shinyenggwak/moija"
-        tags = ["beta-0.1.2"]
+        tags = ["cloud-0.5.8"]
     }
 }
 
@@ -46,7 +46,6 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    // implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     compileOnly 'org.projectlombok:lombok'
@@ -56,9 +55,11 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-gcp-starter-storage:1.2.8.RELEASE'
 
 
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
