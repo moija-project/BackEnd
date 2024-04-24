@@ -1,5 +1,6 @@
 package com.example.moija_project.repository;
 
+import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.entities.Member;
 import com.example.moija_project.entities.TeamId;
 import com.example.moija_project.entities.Waiting;
@@ -20,4 +21,6 @@ public interface MemberRepository extends JpaRepository<Member, TeamId> {
 
     @Transactional
     void deleteByUserId(String userId);
+
+    List<Member> findAllByUserId(String userId);
 }
