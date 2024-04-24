@@ -2,6 +2,8 @@ package com.example.moija_project.repository;
 
 import com.example.moija_project.entities.Recruit;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,10 +39,17 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
     Integer notAvailable(@Param("recruitId") Long recruitId);
 
     Optional<Recruit> findByRecruitIdAndIsAvailableTrue(Long Id);
+    @Query("SELECT r.title FROM Recruit r WHERE r.recruitId = :recruitId AND r.isAvailable = true")
+    Optional<String> findTitleByRecruitIdAndIsAvailableTrue(@Param("recruitId") Long Id);
+    Optional<Recruit> findByRecruitId(Long Id);
 
-    List<Recruit> findAllByLeaderIdAndIsAvailableTrue(String leaderId);
+    Page<Recruit> findAllByLeaderIdAndIsAvailableTrueAndStateRecruitTrue(String leaderId, Pageable pageable);
+    Page<Recruit> findAllByLeaderIdAndIsAvailableTrueAndStateRecruitFalse(String leaderId, Pageable pageable);
+    List<Recruit> findAllByLeaderId(String leaderId);
     List<Recruit> findAllByIsAvailableTrueOrderByStateRecruitDescLatestWriteDesc();
     List<Recruit> findAllByCategoryAndIsAvailableTrueOrderByStateRecruit(String category);
+    Page<Recruit> findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitTrue(String category, Pageable pageable);
+    Page<Recruit> findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitFalse(String category, Pageable pageable);
 
     //user 체크하기 위함
     @Query("SELECT r.leaderId FROM Recruit r WHERE r.recruitId = :recruitId")
@@ -61,4 +70,17 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
 
     @Query("SELECT r.stateRecruit FROM Recruit r WHERE r.recruitId= :postId")
     boolean isRecruiting(@Param(value = "postId")Long postId);
+
+    Page<Recruit> findAllByTitleContainingAndIsAvailableTrue(String title,Pageable pageable);
+    List<Recruit> findAllByTitleContaining(String title);
+    Page<Recruit> findAllByContentsContainingAndIsAvailableTrue(String contents,Pageable pageable);
+    List<Recruit> findAllByContentsContaining(String contents);
+    Page<Recruit> findAllByLeaderIdContainingAndIsAvailableTrue(String userId,Pageable pageable);
+    List<Recruit> findAllByLeaderIdContaining(String userId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Recruit r SET r.reliabilityRecruit= :score where r.recruitId= :postId")
+    void updateReliabilityRecruit(@Param(value = "postId")Long postId, @Param(value = "score")float score);
+
 }

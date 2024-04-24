@@ -26,4 +26,5 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
 
     List<Waiting> findAllByRecruitId(Long recruitId);
 
+    List<Waiting> findAllByUserId(String userId);
 }
