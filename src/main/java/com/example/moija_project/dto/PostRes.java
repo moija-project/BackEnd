@@ -31,10 +31,14 @@ public class PostRes {
         private boolean stateRecruit;
         private String title;
         private String contents;
-        @JsonProperty("leader_nickname")
-        private String leaderNickname;
         @JsonProperty("latest_write")
         private Timestamp latestWrite;
+        @JsonProperty("last_write")
+        private Timestamp lastWrite;
+        @JsonProperty("first_write")
+        private Timestamp firstWrite;
+
+        private String category;
         @JsonProperty("is_changed")
         private boolean isChanged;
         private int penalty;
@@ -42,6 +46,31 @@ public class PostRes {
         private float reliabilityRecruit;
         private long likes;
         private long views;
+        @JsonProperty("pictures")
+        List<String> pictures;
+
+        private boolean myliked;
+        private boolean mycliped;
+        private float mygranted;
+        @JsonProperty("role_in_post")
+        private ROLE_IN_POST roleInPost;
+        @JsonProperty("num_condition")
+        int numCondition;
+
+        //유저 관련 정보 전달
+        @JsonProperty("leader_nickname")
+        private String leaderNickname;
+        @JsonProperty("leader_id")
+        private String leaderId;
+        @JsonProperty("gender")
+        private String gender;
+        @JsonProperty("reliability_user")
+        private Float reliabilityUser;
+        @JsonProperty("born_in")
+        private String bornIn;
+
+        @JsonProperty("profile_photo")
+        private String profilePhoto;
 
     }
     public static class AnswerPostRes{}

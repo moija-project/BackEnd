@@ -1,10 +1,7 @@
 package com.example.moija_project.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 
@@ -17,13 +14,13 @@ public class PostReq {
         String title;
         String contents;
         String category;
-        @JsonProperty("leader_id")
-        String leaderId;
         int penalty =0;
         @JsonProperty("num_condition")
         int numCondition=0;
         @JsonProperty("is_changed")
         boolean isChanged;
+        @JsonProperty("changed_pictures")
+        int[] changedPictures;
         ArrayList<QnADTO> conditions;
     }
 //    @NoArgsConstructor
@@ -34,7 +31,7 @@ public class PostReq {
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
-    @Setter
+    @Setter@Builder
     public static class PostWaitingReq {
         ArrayList<String> answers;
         @JsonProperty("num_answer")
@@ -59,5 +56,29 @@ public class PostReq {
         @JsonProperty("post_id")
         Long recruitId;
         int clip;
+    }
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public class PostDelReq {
+        String userId;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public class PostGrantReq {
+        String postId;
+        float score;
+    }
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter@Builder
+    public static class ScoreDto {
+        String userId;
+        String score;
     }
 }

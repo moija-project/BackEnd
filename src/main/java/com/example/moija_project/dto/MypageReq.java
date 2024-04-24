@@ -12,5 +12,10 @@ public class MypageReq {
         @JsonProperty(value = "user_nickname")
         String userNickname;
     }
+    @Getter@Setter@Builder@AllArgsConstructor
+    public static class MyNickReq{
+        @JsonProperty(value = "new_nickname")
+        String newNickname;
+    }
 
 }
