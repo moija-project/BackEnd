@@ -1,5 +1,6 @@
 package com.example.moija_project.service;
 
+import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.entities.Member;
 import com.example.moija_project.entities.TeamId;
 import com.example.moija_project.entities.Waiting;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,4 +33,15 @@ public class MemberService {
             return memberRepository.existsByRecruitIdAndUserId(postId,userId);
     }
 
+    public List<Member> findAllByRecruitId(Long postId) {
+        return memberRepository.findAllByRecruitId(postId);
+    }
+
+    public void deleteByUserId(String userId) {
+        memberRepository.deleteByUserId(userId);
+    }
+
+    public List<Member> findAllByUserId(String userId) {
+        return  memberRepository.findAllByUserId(userId);
+    }
 }

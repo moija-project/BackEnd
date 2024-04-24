@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.example.moija_project.global.BaseResponseStatus.*;
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
+import static com.example.moija_project.service.PostService.makeList;
 
 @Service
 @Slf4j
@@ -25,8 +26,7 @@ public class ClipService {
     ClipRepository clipRepository;
     @Autowired
     RecruitRepository recruitRepository;
-    @Autowired
-    PostService postService;
+
 
 
     public void userPostClip(PostReq.PostClipReq clipReq, String userId) throws BaseException {
@@ -39,9 +39,8 @@ public class ClipService {
         //클립 누를때
         if(clipReq.getClip() == 1) {
             if(clipRepository.existsByRecruitIdAndUserId(recruitId,userId)) {
-                throw new BaseException(LIKE_ALREADY_EXISTS);
+                throw new BaseException(CLIP_ALREADY_EXISTS);
             } else {
-                //클립 수는 일단 구현은 안함. 굳이 싶어서? = 프론ㄴ트엔드에 숫자가 반영되는지??
                 //클립한 사람과 모집의 관계 처리.
                 Clip clip = Clip.builder()
                         .recruitId(recruitId)
@@ -49,12 +48,12 @@ public class ClipService {
                         .build();
                 clipRepository.saveAndFlush(clip);
             }
-            //좋아요를 취소할 때
+            //클립을 취소할 때
         } else if (clipReq.getClip() == 0) {
             if(clipRepository.existsByRecruitIdAndUserId(recruitId,userId)) {
                 clipRepository.deleteByRecruitIdAndUserId(recruitId,userId);
             } else {
-                throw new BaseException(LIKE_NOT_EXISTS);
+                throw new BaseException(CLIP_NOT_EXISTS);
             }
         } else {
             throw new BaseException(BAD_ACCESS);
@@ -65,7 +64,11 @@ public class ClipService {
         List<Clip> clips = clipRepository.findAllByUserId(userId);
         //predicate식의 list 방식으로 다시 만들어야겠네...
         List<Recruit> recruits = clips.stream().map(Clip::getRecruit).toList();
-        return postService.makeList(recruits);
+        return makeList(recruits);
 
+    }
+
+    public boolean existsByRecruitIdAndUserId(Long recruitId, String userId) {
+        return clipRepository.existsByRecruitIdAndUserId(recruitId,userId);
     }
 }
