@@ -29,9 +29,14 @@ public enum BaseResponseStatus {
 
     NOT_EXISTS(false, 4000, "삭제되었거나 존재하지 않습니다."),
     BAD_ACCESS(false,4001,"잘못된 접근입니다."),
+    TASK_FAILED(false, 4002, "작업에 실패했습니다. 다시 시도해주세요."),
+    LOGIN_EXPIRED(false,4003, "인증이 만료되었습니다. 다시 로그인해주세요."),
+    PASSWORD_NOT_MATCH(false, 4004,"비밀번호가 틀렸습니다." ),
+    NOT_PRIVILEGE(false, 4005,"권한이 없는 요청입니다."),
+    CLIP_NOT_EXISTS(false, 4009, "스크랩을 누르지 않아서 취소할 수 없습니다."),
     LIKE_ALREADY_EXISTS(false, 4010, "이미 좋아한 게시글입니다."),
     LIKE_NOT_EXISTS(false, 4011, "좋아요를 누르지 않아서 취소할 수 없습니다."),
-    CANNOT_LIKE_MINE(false,4012, "내 게시물은 좋아할 수 없습니다."),
+    CLIP_ALREADY_EXISTS(false,4012, "이미 스크랩한 게시글입니다."),
 
     CANNOT_CLIP_MINE(false,4013 , "내 게시물은 스크랩하지 않습니다."),
     WAITING_ALREADY_EXISTS(false, 4014, "이 모임에 대기하고 있습니다. 모임장이 승락할 때까지 기다려주세요."),
@@ -46,7 +51,12 @@ public enum BaseResponseStatus {
     LOGIN_FIRST(false,4020,"먼저 로그인을 진행해주세요."),
     NOT_EDIT(false,4021,"변경할 필요가 없습니다."),
     NICKNAME_CHANGE_AVAILABLE(false, 4022, "닉네임 변경이 너무 잦습니다. 이전 변경으로 부터 3개월 이후에 시도해주세요."),
-    DUPLICATE_NICKNAME(false, 4023, "중복된 닉네임이 있습니다. 다른 닉네임을 설정해주세요.");
+    DUPLICATE_NICKNAME(false, 4023, "중복된 닉네임이 있습니다. 다른 닉네임을 설정해주세요."),
+    NUM_FILE_OVER(false, 4024, "허가된 파일 개수를 넘었습니다."),
+    FILE_FORMAT_ERROR(false, 4025,"사용 가능한 파일 형태가 아닙니다. (png,jpg,jpeg가능)" ),
+    ALREADY_SCORED(false, 4026, "이미 점수를 부여했습니다." )
+
+    ;
 
 
     private final boolean isSuccess;
