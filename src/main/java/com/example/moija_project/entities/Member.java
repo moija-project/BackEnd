@@ -1,5 +1,6 @@
 package com.example.moija_project.entities;
 
+import com.example.moija_project.dto.MypageRes;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,5 +41,7 @@ public class Member {
     @ManyToOne
     @JoinColumn(name = "recruit_id", referencedColumnName = "recruit_id", insertable = false, updatable = false)
     private Recruit recruit;
-
+    public int isLeader(Member mem) {
+        return mem.getRecruit().getLeaderId().equals(mem.getUserId()) ? 1:-1;
+    }
 }
