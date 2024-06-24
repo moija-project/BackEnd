@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.1'
+    id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'com.google.cloud.tools.jib' version '3.0.0'
 }
@@ -21,7 +21,7 @@ jib {
     }
     to {
         image = "shinyenggwak/moija"
-        tags = ["cloud-0.5.8"]
+        tags = ["cloud-0.6.0"]
     }
 }
 
@@ -54,10 +54,6 @@ dependencies {
     implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.3.2'
     implementation 'org.springframework.cloud:spring-cloud-gcp-starter-storage:1.2.8.RELEASE'
 
-
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
-    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
-    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
     annotationProcessor 'org.projectlombok:lombok'
 }

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ImageRepository extends MongoRepository<Image,Long> {
@@ -16,6 +17,8 @@ public interface ImageRepository extends MongoRepository<Image,Long> {
     void deleteByRecruitIdAndNumber(Long postId, int index);
 
     boolean existsByRecruitIdAndNumber(Long recruitId, int number);
+
+    Optional<Image> findByRecruitIdAndNumber(Long recruitId,int number);
 
     @Query("{'recruitId' : ?0}")
     @Update("{'$set': {'recruitId': ?1}}")

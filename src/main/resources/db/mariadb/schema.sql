@@ -1,23 +1,27 @@
-#CREATE DATABASE moija;
+CREATE DATABASE IF NOT EXISTS moija;
 USE `moija`;
 SET FOREIGN_KEY_CHECKS = 1;
 
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
                         `user_id`	VARCHAR(15)	NOT NULL,
+                        `uuid`               varchar(255)           not null,
+                        `is_account_nonlocked`  BOOLEAN                  not null,
+                        `is_enabled`         BOOLEAN                  not null,
+                        `email`	VARCHAR(40)	NOT NULL,
                         `nickname`	VARCHAR(15)	NOT NULL,
                         `gender`	BOOLEAN	NOT NULL	DEFAULT false,
-                        `birth`	DATE	NOT NULL,
-                        `phone_number`	INT(11)	NOT NULL,
+                        `birth`	DATE NOT NULL,
+                        `phone_number`	VARCHAR(14)	NOT NULL,
                         `name`	VARCHAR(20)	NOT NULL,
-                        `profile`	VARCHAR(40)	NULL,
-                        `time_join`	TIMESTAMP	NOT NULL,
+                        `profile`	VARCHAR(255)	NULL,
+                        `time_join`	DATETIME(6)	NOT NULL,
                         `reliability_user`	FLOAT	NOT NULL	DEFAULT 3,
-                        `password`	VARCHAR(50)	NOT NULL,
-                            `is_available`	BOOLEAN	NOT NULL DEFAULT true,
+                        `password`	VARCHAR(255)	NOT NULL,
+                        `authority` enum ('ROLE_USER', 'ROLE_ADMIN') NULL,
                         CONSTRAINT PRIMARY KEY (`user_id`)
 );
 
-CREATE TABLE `recruit` (
+CREATE TABLE IF NOT EXISTS `recruit` (
                            `recruit_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                            `title`	VARCHAR(20)	NOT NULL,
                            `contents`	VARCHAR(2000)	NOT NULL,
@@ -38,7 +42,12 @@ CREATE TABLE `recruit` (
                            CONSTRAINT `FK_USER_TO_RECRUIT_1` FOREIGN KEY (`leader_id`) REFERENCES `user` (`user_id`)
 );
 
-CREATE TABLE `member` (
+
+create SEQUENCE team_id_seq START WITH 1
+    INCREMENT BY 1
+    MAXVALUE 999999;
+
+CREATE TABLE IF NOT EXISTS `member` (
                           `team_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                           `user_id`	VARCHAR(15)	NOT NULL,
                           `recruit_id`	BIGINT	NOT NULL,
@@ -52,7 +61,7 @@ CREATE TABLE `member` (
                           CONSTRAINT `FK_RECRUIT_TO_MEMBER_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
-CREATE TABLE `waiting` (
+CREATE TABLE IF NOT EXISTS `waiting` (
                            `waiting_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                            `is_permitted`	BOOLEAN	NOT NULL	DEFAULT false,
                            `is_ask`	BOOLEAN	NOT NULL	DEFAULT false,
@@ -64,7 +73,7 @@ CREATE TABLE `waiting` (
                            CONSTRAINT `FK_RECRUIT_TO_WAITING_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
-CREATE TABLE `clip` (
+CREATE TABLE IF NOT EXISTS `clip` (
                         `clip_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                         `user_id`	VARCHAR(15)	NOT NULL,
                         `recruit_id`	BIGINT	NOT NULL,
@@ -77,7 +86,7 @@ CREATE TABLE `clip` (
                         CONSTRAINT `FK_RECRUIT_TO_CLIP_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
 
-CREATE TABLE `score` (
+CREATE TABLE IF NOT EXISTS `score` (
                          `score_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                          `score`	FLOAT	NULL,
                          `grant_id`	VARCHAR(15) NOT NULL,
@@ -87,7 +96,17 @@ CREATE TABLE `score` (
                          CONSTRAINT `FK_USER_TO_SCORE_2` FOREIGN KEY (`granted_id`) REFERENCES `user` (`user_id`)
 );
 
-CREATE TABLE `likes` (
+CREATE TABLE IF NOT EXISTS `spore` (
+                                       `spore_id`	BIGINT	NOT NULL AUTO_INCREMENT,
+                                       `spore`	FLOAT	NULL,
+                                       `grant_id`	VARCHAR(15) NOT NULL,
+                                       `granted_id`	BIGINT NOT NULL,
+                                       CONSTRAINT PRIMARY KEY (`spore_id`),
+                                       CONSTRAINT `FK_USER_TO_SPORE_1` FOREIGN KEY (`grant_id`) REFERENCES `user` (`user_id`),
+                                       CONSTRAINT `FK_USER_TO_SPORE_2` FOREIGN KEY (`granted_id`) REFERENCES `recruit` (`recruit_id`)
+);
+
+CREATE TABLE IF NOT EXISTS `likes` (
                         `like_id`	BIGINT	NOT NULL AUTO_INCREMENT,
                         `user_id`	VARCHAR(15)	NOT NULL,
                         `recruit_id`	BIGINT	NOT NULL,
@@ -99,7 +118,3 @@ CREATE TABLE `likes` (
                         CONSTRAINT `FK_USER_TO_LIKE_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
                         CONSTRAINT `FK_RECRUIT_TO_LIKE_1` FOREIGN KEY (`recruit_id`) REFERENCES `recruit` (`recruit_id`)
 );
-
-
-
-

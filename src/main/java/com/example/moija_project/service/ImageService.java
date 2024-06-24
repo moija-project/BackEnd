@@ -28,6 +28,10 @@ public class ImageService {
         return imageRepository.findAllByUrlContainsIgnoreCase(String.format("[%s](",Long.toString(recruitId)));
     }
 
+    public Image findByRecruitIdAndNumber(Long recruitId) {
+        return imageRepository.findByRecruitIdAndNumber(recruitId,0).orElse(new Image("http://resource.mo.ija.kro.kr/image/[14](0)-fb9ca2b0-93a7-4e9b-9a40-79b8f7b444ac.jpg?Expires=9223372036854775&KeyName=imnew-key&Signature=gfehWvRzFtk-CcfRxoQS-V-GvN4="));
+    }
+
     public void deleteByRecruitIdAndNumber(Long postId, int index) {
         imageRepository.deleteByRecruitIdAndNumber(postId,index);
     }

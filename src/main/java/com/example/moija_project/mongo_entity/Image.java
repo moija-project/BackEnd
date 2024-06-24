@@ -14,4 +14,7 @@ public class Image {
     Long recruitId;
     int number;
     String url;
+    public Image(String url) {
+        this.url=url;
+    }
 }
