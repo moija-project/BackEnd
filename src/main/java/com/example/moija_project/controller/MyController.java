@@ -3,11 +3,11 @@ package com.example.moija_project.controller;
 import com.example.moija_project.dto.*;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.global.BaseResponse;
-import com.example.moija_project.repository.UserRepository;
 import com.example.moija_project.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,9 +18,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.example.moija_project.global.BaseResponseStatus.*;
+import static com.example.moija_project.service.PostService.getPageable;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,14 +35,16 @@ public class MyController {
     @Autowired
     WaitingService waitingService;
 
-    @PostMapping("/team/list")
+    // 팀 리스트 확인 (내가 만든거)
+    @PostMapping(value = "/team/list")
     public BaseResponse<List> loadTeamList(
-            @RequestBody String userId
+            @RequestBody IdPageDTO idPageDTO
     ) throws BaseException {
         //이거 유저는 널이면 로그인 시키는 게 너무 많은거 어떻게 기본적으로 처리할 수 있는지 찾아봐야함.
-        if(userId == null)
+        if(idPageDTO.getId() == null)
             throw new BaseException(LOGIN_FIRST);
-        List<PostRes.ListPostRes> response = myService.loadRecruitList(userId);
+
+        List<PostRes.ListPostRes> response = myService.loadRecruitList(idPageDTO.getId(), idPageDTO.getPageNo());
 
         return new BaseResponse<List>(response);
     }
@@ -83,20 +85,23 @@ public class MyController {
     ) throws BaseException{
         if(userId == null)
             throw new BaseException(LOGIN_FIRST);
-        List<PostRes.ListPostRes> target = myService.loadRecruitList(userId);
-        List<MypageRes.WaitingListRes> response = waitingService.loadWaitingList(target);
+        List<PostRes.ListPostRes> target = myService.loadRecruitListAll(userId);
+        Sort sort = Sort.by(Sort.Direction.DESC,"waitingId");
+        List<MypageRes.WaitingListRes> response = waitingService.loadWaitingList(target,sort);
         return new BaseResponse<List>(response);
     }
 
     @PostMapping("/send/list")
     public BaseResponse<List> loadSendList(
-            @RequestBody String userId
+            @RequestBody IdPageDTO idPageDTO
     ) throws BaseException{
-        if(userId == null)
+        if(idPageDTO.getId() == null)
             throw new BaseException(LOGIN_FIRST);
         //List<MypageRes.AskListRes> response = waitingService.loadMyRequest(userId);
-        List<PostRes.ListPostRes> myList = myService.loadRecruitList(userId);
+//        List<PostRes.ListPostRes> myList = myService.loadRecruitList(userId,pageNo);
+        List<PostRes.ListPostRes> myList = myService.loadSendList(idPageDTO.getId(),idPageDTO.getPageNo());
         List<MypageRes.AcceptRes> response = myList.stream().map(l -> new MypageRes.AcceptRes(l.getTitle(),l.getPost_id())).toList();
+
         return new BaseResponse<List>(response);
     }
 
@@ -156,17 +161,13 @@ public class MyController {
     }
 
     @PostMapping("/joined-team")
-    public BaseResponse<List> viewMyJoinTeam(
-            @RequestBody String userId
+    public BaseResponse<List> viewMyJoinTeamv2(
+            @RequestBody IdPageDTO idPageDTO
     ) throws BaseException{
-        if(userId == null)
+        if(idPageDTO.getId() == null)
             throw new BaseException(LOGIN_FIRST);
-        List<PostRes.ListPostRes> response = new ArrayList<>(myService.findBymemberedTeam(userId));
-        //response.forEach(s-> System.out.println("my all team : "+s.getTitle()+" / "+ s.getPost_id()));
-        List<PostRes.ListPostRes> myRecruit = new ArrayList<>(myService.loadRecruitList(userId));
-        //myRecruit.forEach(s-> System.out.println("im leader team : "+s.getTitle()+" / "+s.getPost_id()));
-        //내가 참여한 모임 - 내가 연 모임 => 내가 조인한 모임
-        myRecruit.forEach(l -> response.removeIf(rl -> Objects.equals(rl.getPost_id(), l.getPost_id())));
+        List<PostRes.ListPostRes> response = myService.loadMyJoinedTeam(idPageDTO.getId(), idPageDTO.getPageNo());
+
         if(response.isEmpty())
             throw new BaseException(NOT_EXISTS);
         return new BaseResponse<List>(response);

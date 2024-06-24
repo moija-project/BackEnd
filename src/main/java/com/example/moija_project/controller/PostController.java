@@ -3,17 +3,14 @@ package com.example.moija_project.controller;
 import com.example.moija_project.dto.PostReq;
 import com.example.moija_project.dto.PostRes;
 import com.example.moija_project.dto.QnADTO;
-import com.example.moija_project.dto.UserCheckReq;
 import com.example.moija_project.global.BaseException;
 import com.example.moija_project.global.BaseResponse;
 import com.example.moija_project.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -88,22 +85,25 @@ public class PostController {
         return  new BaseResponse<Void>(SUCCESS);
     }
 
+    @GetMapping("/search")
+    public BaseResponse<List> searchPost(
+            @RequestParam(value = "keyword") String keyword,
+            @RequestParam(value = "view_type") String viewType,
+            @RequestParam(value = "search_type") String searchType,
+            @RequestParam(required = false, defaultValue = "0", value = "page") int pageNo
+    ) throws BaseException {
+        List<PostRes.ListPostRes> response = postService.searchPost(keyword,searchType,viewType,pageNo);
+        return new BaseResponse<List>(response);
+    }
+
     @GetMapping("/list")
-    public BaseResponse loadPostList(
+    public BaseResponse<List<PostRes.ListPostRes>> loadPostList(
             @RequestParam(value="category",required = false,defaultValue = "all") String category,
             @RequestParam(value = "view_type",required = false, defaultValue = "latest") String viewType,
-            @RequestParam(value = "keyword",required = false) String keyword,
-            @RequestParam(value = "search_type",required = false,defaultValue = "title") String searchType,
             @RequestParam(required = false, defaultValue = "0", value = "page") int pageNo
     ) throws BaseException, IOException {
-        Page<PostRes.ListPostRes> response = postService.pageList(
-                Optional.of(category),
-                viewType,
-                Optional.ofNullable(keyword),
-                Optional.of(searchType),
-                Optional.empty(),
-                pageNo);
-        return new BaseResponse(response.getContent());
+        List<PostRes.ListPostRes> response = postService.pageListv2(category,viewType,pageNo);
+        return new BaseResponse<List<PostRes.ListPostRes>>(response);
     }
 
     @GetMapping("/page")
@@ -219,6 +219,13 @@ public class PostController {
             @PathVariable(value = "postId") Long postId
     ) throws BaseException {
         return new BaseResponse<>(postService.titlePost(postId));
+    }
+
+    @GetMapping("/picture/{postId}")
+    public BaseResponse<Map> picturePost(
+            @PathVariable(value = "postId") Long postId
+    ) throws BaseException {
+        return new BaseResponse<>(postService.picturePost(postId));
     }
 
 }

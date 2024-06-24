@@ -4,6 +4,7 @@ import com.example.moija_project.entities.Recruit;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -72,15 +73,22 @@ public interface RecruitRepository extends JpaRepository<Recruit,Long> {
     boolean isRecruiting(@Param(value = "postId")Long postId);
 
     Page<Recruit> findAllByTitleContainingAndIsAvailableTrue(String title,Pageable pageable);
-    List<Recruit> findAllByTitleContaining(String title);
-    Page<Recruit> findAllByContentsContainingAndIsAvailableTrue(String contents,Pageable pageable);
-    List<Recruit> findAllByContentsContaining(String contents);
-    Page<Recruit> findAllByLeaderIdContainingAndIsAvailableTrue(String userId,Pageable pageable);
-    List<Recruit> findAllByLeaderIdContaining(String userId);
+    //v2 : 쿼리딴에서 모든걸 해결하는게 제일 성능이 좋을 것이다... 불필요한 데이터 참조가 적어지므로...
+    Page<Recruit> findAllByTitleContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(String title, Boolean stateRecruit, Pageable pageable);
+    Page<Recruit> findAllByContentsContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(String contents, Boolean stateRecruit, Pageable pageable);
+    Page<Recruit> findAllByLeader_NicknameContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(String userId, Boolean stateRecruit, Pageable pageable);
+    Page<Recruit> findAllByTitleContainingOrContentsContainingOrLeader_NicknameContainingAndStateRecruitAndIsAvailableTrue(String keyword1,String keyword2,String keyword3, Boolean stateRecruit, Pageable pageable);
+    //내부에서만 접근함
+    //성능 저하 - 만약 이사람이 쓴 글이 너무 많으면
+    List<Recruit> findAllByLeaderIdAndIsAvailableTrue(String userId, Sort sort);
+    // -- v2
+
 
     @Modifying
     @Transactional
     @Query("UPDATE Recruit r SET r.reliabilityRecruit= :score where r.recruitId= :postId")
     void updateReliabilityRecruit(@Param(value = "postId")Long postId, @Param(value = "score")float score);
+
+
 
 }

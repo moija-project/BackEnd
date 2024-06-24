@@ -23,8 +23,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static com.example.moija_project.dto.ROLE_IN_POST.*;
-import static com.example.moija_project.extractor.Sorter.state;
-import static com.example.moija_project.extractor.Sorter.viewType;
 import static com.example.moija_project.global.BaseResponseStatus.*;
 
 @Service
@@ -42,6 +40,27 @@ public class PostService {
     private final SporeService sporeService;
     private final GCSService gcsService;
     private final MemberService memberService;
+    public static Pageable getPageable(int pageNo,Sort sort) {
+        return PageRequest.of(pageNo,PAGE_SIZE,sort);
+    }
+    public static Pageable getPageable(int pageNo,String view_type) {
+        Pageable pageable;
+        switch (view_type) {
+            case "most_view" -> pageable = getPageable(pageNo,getViewSort());
+            case "most_like" -> pageable = getPageable(pageNo,getLikeSort());
+            default -> pageable = getPageable(pageNo,getLatestSort());
+        }
+        return pageable;
+    }
+    public static Sort getLatestSort(){
+        return Sort.by(Sort.Direction.DESC, "latestWrite");
+    }
+    public static Sort getViewSort() {
+        return Sort.by(Sort.Direction.DESC, "views");
+    }
+    public static Sort getLikeSort() {
+        return Sort.by(Sort.Direction.DESC, "likes");
+    }
     public void writePost(PostReq.PostWriteReq postWriteReq, List<MultipartFile> images, Long postId,String userId) throws BaseException, IOException, NoSuchAlgorithmException, InvalidKeyException {
         Recruit recruit;
         //수정일때는 어떤 것을 할지
@@ -145,59 +164,41 @@ public class PostService {
         recruit.setNumCondition(postWriteReq.getNumCondition());
         return recruit;
     }
-    public Page<PostRes.ListPostRes> pageList(Optional<String> category, String view_type, Optional<String> keyword, Optional<String> searchType, Optional<String> userId,int pageNo)
-            throws BaseException {
-        switch (view_type) {
-            case "most_view" -> view_type = "views";
-            case "most_like" -> view_type = "likes";
-            default -> view_type = "latestWrite";
-        }
-        Sort sort = Sort.by(Sort.Direction.DESC, view_type);
-        Pageable pageable = PageRequest.of(pageNo,PAGE_SIZE, sort);
-        List<PostRes.ListPostRes> recruitList = list(category,view_type,keyword,searchType,userId,pageable);
-        return new PageImpl<>(recruitList,pageable,recruitList.size());
-    }
-
-    public List<PostRes.ListPostRes> list(Optional<String> category, String view_type, Optional<String> keyword, Optional<String> searchType, Optional<String> userId,Pageable pageable) throws BaseException {
-        List<Recruit> recruitList = new ArrayList<>();
-        Page<Recruit> recruitPage;
-        userId.ifPresent(s -> {
-            recruitList.addAll(recruitRepository.findAllByLeaderIdAndIsAvailableTrueAndStateRecruitTrue(s,pageable).getContent());
-            recruitList.addAll(recruitRepository.findAllByLeaderIdAndIsAvailableTrueAndStateRecruitFalse(s,pageable).getContent());
-        });
-        category.ifPresent(s -> {
-            recruitList.addAll(recruitRepository.findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitTrue(s.equals("all")?"":s,pageable).getContent());
-            recruitList.addAll(recruitRepository.findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitFalse(s.equals("all")?"":s,pageable).getContent());
-
-        });
-        //아직 키워드 정렬 안됨.!!!!!!!!!!!1
-        keyword.ifPresent(s -> {
-            switch(searchType.orElse("all")) {
-                case "tilte":
-                    recruitList.addAll(recruitRepository.findAllByTitleContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-                case "contents":
-                    recruitList.addAll(recruitRepository.findAllByContentsContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-                case "leader":
-                    recruitList.addAll(recruitRepository.findAllByLeaderIdContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-                default:
-                    recruitList.addAll(recruitRepository.findAllByTitleContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-                    recruitList.addAll(recruitRepository.findAllByContentsContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-                    recruitList.addAll(recruitRepository.findAllByLeaderIdContainingAndIsAvailableTrue(keyword.get(),pageable).getContent());
-            }
-        });
-
-        if(recruitList.size() > 10) {
-            return makeList( new PageImpl<>(recruitList, pageable, recruitList.size()).getContent() );
-
+    public List<PostRes.ListPostRes> pageListv2(String category, String view_type,int pageNo) throws BaseException {
+        Pageable pageable = getPageable(pageNo,view_type);
+        Page<Recruit> result = recruitRepository.findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitTrue(category,pageable);
+        //마지막에서 벗어난 페이지인 경우
+        if (pageNo >= result.getTotalPages()) {
+            int stateFalsePageNo = pageNo - result.getTotalPages();
+            result = recruitRepository.findAllByCategoryContainingAndIsAvailableTrueAndStateRecruitFalse(category,pageable);
         }
 
-
-        if(recruitList.isEmpty()) {
+        if(result.isEmpty()) {
             throw new BaseException(NOT_EXISTS);
         }
+        return makeList(result.getContent());
 
-        return makeList(recruitList);
     }
+    public List<PostRes.ListPostRes> myPageListAll(String userId,Sort sort) throws BaseException {
+        List<Recruit> result = recruitRepository.findAllByLeaderIdAndIsAvailableTrue(userId,sort);
+        return makeList(result);
+    }
+
+    public List<PostRes.ListPostRes> myPageList(String userId, int pageNo) throws BaseException {
+        Page<Recruit> result;
+        result = recruitRepository.findAllByLeaderIdAndIsAvailableTrueAndStateRecruitTrue(userId,getPageable(pageNo,getLatestSort()));
+        //마지막에서 벗어난 페이지인 경우
+        if (pageNo >= result.getTotalPages()) {
+            int stateFalsePageNo = pageNo - result.getTotalPages();
+            result = recruitRepository.findAllByLeaderIdAndIsAvailableTrueAndStateRecruitFalse(userId,getPageable(stateFalsePageNo,getLatestSort()));
+        }
+
+        if(result.isEmpty()) {
+            throw new BaseException(NOT_EXISTS);
+        }
+        return makeList(result.getContent());
+    }
+
 
     public PostRes.ReadPostRes view(Long postId,Optional<String> userId) throws BaseException, IOException {
         Optional<Recruit> selected = recruitRepository.findByRecruitIdAndIsAvailableTrue(postId);
@@ -348,4 +349,51 @@ public class PostService {
         }
         return Map.of("title",recruitOp.get());
     }
+
+    public Map picturePost(Long postId) throws BaseException {
+        Image image = imageService.findByRecruitIdAndNumber(postId);
+        return Map.of("image_url",image.getUrl());
+    }
+
+
+    public List<PostRes.ListPostRes> searchPost(String keyword, String searchType,String viewType, int pageNo) throws BaseException {
+        Page<Recruit> result = null;
+
+        //모집중인 게시글 우선 페이징한다.
+        result = loadPostWithState(searchType,keyword,getPageable(pageNo,viewType),true);
+        List<Recruit> pageResult = new ArrayList<>(result.getContent());
+
+        System.out.println(result.getTotalPages());
+
+        //마지막에서 벗어난 페이지인 경우
+        if (pageNo >= result.getTotalPages()) {
+            int stateFalsePageNo = pageNo - result.getTotalPages();
+            result = loadPostWithState(searchType,keyword,getPageable(stateFalsePageNo,viewType),false);
+        }
+
+        if(result.isEmpty()) {
+            throw new BaseException(NOT_EXISTS);
+        }
+        return makeList(pageResult);
+    }
+
+    private Page<Recruit> loadPostWithState(String searchType, String keyword, Pageable pageable, boolean state) {
+        Page<Recruit> result;
+
+        switch (searchType) {
+            case "title" :
+                result = recruitRepository.findAllByTitleContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(keyword,state,pageable);
+                break;
+            case "contents" :
+                result  = recruitRepository.findAllByContentsContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(keyword,state,pageable);
+                break;
+            case "leader" :
+                result = recruitRepository.findAllByLeader_NicknameContainingIgnoreCaseAndStateRecruitAndIsAvailableTrue(keyword,state,pageable);
+                break;
+            default:
+                result = recruitRepository.findAllByTitleContainingOrContentsContainingOrLeader_NicknameContainingAndStateRecruitAndIsAvailableTrue(keyword,keyword,keyword,state,pageable);
+        }
+        return result;
+    }
+
 }

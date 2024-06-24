@@ -1,9 +1,6 @@
 package com.example.moija_project.service;
 
-import com.example.moija_project.dto.MypageRes;
-import com.example.moija_project.dto.PostReq;
-import com.example.moija_project.dto.PostRes;
-import com.example.moija_project.dto.QnADTO;
+import com.example.moija_project.dto.*;
 import com.example.moija_project.mongo_entity.Answer;
 import com.example.moija_project.entities.Waiting;
 import com.example.moija_project.extractor.Genarator;
@@ -12,19 +9,23 @@ import com.example.moija_project.repository.WaitingRepository;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 import static com.example.moija_project.global.BaseResponseStatus.BAD_ACCESS;
 import static com.example.moija_project.global.BaseResponseStatus.NOT_EXISTS;
+import static com.example.moija_project.service.PostService.getPageable;
+import static com.example.moija_project.service.PostService.makeList;
 
 @Service
 @NoArgsConstructor
 @Slf4j
 public class WaitingService {
     @Autowired
-    WaitingRepository waitingRepository;
+    private WaitingRepository waitingRepository;
     @Autowired
     AnswerService answerService;
     @Autowired
@@ -48,11 +49,11 @@ public class WaitingService {
         return waitingRepository.existsByRecruitIdAndUserId(teamId,userId);
     }
 
-    public List<MypageRes.WaitingListRes> loadWaitingList(List<PostRes.ListPostRes> myposts) throws BaseException {
+    public List<MypageRes.WaitingListRes> loadWaitingList(List<PostRes.ListPostRes> myposts, Sort sort) throws BaseException {
         ArrayList<MypageRes.WaitingListRes> response = new ArrayList<>();
         //리크루트 이름으로부터 웨이팅 정보를 다 가져옴
         for (PostRes.ListPostRes post : myposts) {
-            List<Waiting> waitings = waitingRepository.findAllByRecruitId(post.getPost_id());
+            List<Waiting> waitings = waitingRepository.findAllByRecruitId(post.getPost_id(),sort);
             List<MypageRes.MemDto> members = waitings.stream().map(w ->
                     MypageRes.MemDto.builder()
                             .waitingId(w.getWaitingId())
@@ -74,6 +75,9 @@ public class WaitingService {
     public List<MypageRes.AskListRes> loadMyRequest(String userId) {
         List<Waiting> myWaitings =  waitingRepository.findAllByUserId(userId);
         return myWaitings.stream().map(MypageRes.AskListRes::from).toList();
+    }
+    public List<PostRes.ListPostRes> loadMyWaitingRecruit(String userId, Pageable pageable) {
+        return makeList(waitingRepository.loadRecruitByUserId(userId,pageable));
     }
 
     public MypageRes.WaitingRes viewWaiting(Long waitingId, String leaderId) throws BaseException {
@@ -121,6 +125,4 @@ public class WaitingService {
         waitingRepository.deleteById(waitingId);
 
     }
-
-
 }
